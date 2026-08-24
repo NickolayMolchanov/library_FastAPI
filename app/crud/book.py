@@ -5,6 +5,21 @@ from app.models.book import Book
 from app.schemas.book import SBookCreate
 
 
+async def create_book(
+    session: AsyncSession,
+    book_data: SBookCreate,
+) -> Book:
+    """Создать новую книгу."""
+    book = Book(
+        title=book_data.title,
+        description=book_data.description,
+    )
+    session.add(book)
+    await session.commit()
+    await session.refresh(book)
+    return book
+
+
 async def get_book_by_id(
     session: AsyncSession,
     book_id: int,
@@ -24,25 +39,45 @@ async def get_books(
     return list(result.scalars().all())
 
 
-async def create_book(
+async def upd_book(
     session: AsyncSession,
-    book_data: SBookCreate,
-) -> Book:
-    """Создать новую книгу."""
-    book = Book(
-        title=book_data.title,
-        description=book_data.description,
+    book_id: int,
+    data: SBookCreate,
+):
+    result = await session.execute(
+        select(Book).where(Book.id == book_id)
     )
-    session.add(book)
+
+    book = result.scalar_one_or_none()
+
+    if book is None:
+        return None
+
+    book.title = data.title
+    book.description = data.description
+
     await session.commit()
     await session.refresh(book)
+
     return book
 
 
 async def delete_book(
     session: AsyncSession,
-    book: Book,
-) -> None:
-    """Удалить книгу (передан объект Book)."""
+    book_id: int,
+):
+    result = await session.execute(
+        select(Book).where(Book.id == book_id)
+    )
+
+    book = result.scalar_one_or_none()
+
+    if book is None:
+        return None
+
     await session.delete(book)
     await session.commit()
+
+    return book
+
+
