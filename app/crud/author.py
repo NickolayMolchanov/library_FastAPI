@@ -5,13 +5,21 @@ from app.models.author import Author
 from app.schemas.author import SAuthorCreate
 
 
-async def get_author_by_id(
+async def create_author(
     session: AsyncSession,
-    author_id: int,
-) -> Author | None:
-    stmt = select(Author).where(Author.id == author_id)
-    result = await session.execute(stmt)
-    return result.scalar_one_or_none()
+    author_data: SAuthorCreate,
+) -> Author:
+    author = Author(
+        name=author_data.name,
+        biography=author_data.biography,
+        birthdate=author_data.birthdate,
+    )
+
+    session.add(author)
+    await session.commit()
+    await session.refresh(author)
+
+    return author
 
 
 async def get_authors(
@@ -22,17 +30,32 @@ async def get_authors(
     return list(result.scalars().all())
 
 
-async def create_user(
+async def get_author_by_id(
     session: AsyncSession,
-    user_data: SAuthorCreate,
-) -> Author:
-    author = Author(
-        name=user_data.username,
-        biography=user_data.email,
-        birthdate=user_data.birthdate,
-    )
+    author_id: int,
+) -> Author | None:
+    stmt = select(Author).where(Author.id == author_id)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
 
-    session.add(author)
+
+async def upd_author(
+    session: AsyncSession,
+    author_id: int,
+    author_data: SAuthorCreate,
+) -> Author | None:
+    stmt = select(Author).where(Author.id == author_id)
+    result = await session.execute(stmt)
+
+    author = result.scalar_one_or_none()
+
+    if author is None:
+        return None
+
+    author.name = author_data.name
+    author.biography = author_data.biography
+    author.birthdate = author_data.birthdate
+
     await session.commit()
     await session.refresh(author)
 

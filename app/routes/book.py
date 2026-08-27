@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.book import create_book, get_book_by_id, get_books, upd_book, delete_book
+from app.crud.book import (
+    create_book,
+    get_book_by_id,
+    get_books,
+    upd_book,
+    delete_book
+)
 from app.database import get_db
 from app.schemas.book import SBookCreate
 
@@ -16,7 +22,10 @@ async def create_new_book(
     description: str | None = Body(None),
     session: AsyncSession = Depends(get_db),
 ):
-    book_data = SBookCreate(title=title, description=description)
+    book_data = SBookCreate(
+        title=title,
+        description=description
+    )
     new_book = await create_book(session, book_data)
     return new_book
 

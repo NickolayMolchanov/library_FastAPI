@@ -1,16 +1,16 @@
-from datetime import date
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
 class SAuthorBase(BaseModel):
     name: str
     biography: str
-    birthdate: date
+    birthdate: datetime
 
-class SAuthorCreate(BaseModel):
+class SAuthorCreate(SAuthorBase):
     pass
 
-class SAuthor(BaseModel):
+class SAuthor(SAuthorBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
