@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.author import Author
 from app.models.book import Book
 from app.schemas.book import SBookCreate
 
@@ -9,14 +10,25 @@ async def create_book(
     session: AsyncSession,
     book_data: SBookCreate,
 ) -> Book:
-    book = Book(
+
+    stmt = select(Author).where(
+        Author.id.in_(book_data.author_ids)
+    )
+
+    result = await session.execute(stmt)
+
+    authors = list(result.scalars().all())
+
+    new_book = Book(
         title=book_data.title,
         description=book_data.description,
+        authors=authors,
     )
-    session.add(book)
+
+    session.add(new_book)
     await session.commit()
-    await session.refresh(book)
-    return book
+    await session.refresh(new_book)
+    return new_book
 
 
 async def get_book_by_id(

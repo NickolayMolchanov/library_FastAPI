@@ -18,16 +18,10 @@ router = APIRouter(
 
 @router.post("/")
 async def create_new_book(
-    title: str = Body(...),
-    description: str | None = Body(None),
+    book_data: SBookCreate,
     session: AsyncSession = Depends(get_db),
 ):
-    book_data = SBookCreate(
-        title=title,
-        description=description
-    )
-    new_book = await create_book(session, book_data)
-    return new_book
+    return await create_book(session, book_data)
 
 @router.get("/{book_id}")
 async def get_book(book_id: int, session: AsyncSession = Depends(get_db)):

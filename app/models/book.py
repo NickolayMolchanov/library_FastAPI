@@ -13,4 +13,7 @@ class Book(Base):
     title: Mapped[str] = mapped_column(String(30))
     description: Mapped[Optional[str]] = mapped_column(String(30))
 
-    authors: Mapped[List["Author"]] = relationship(secondary=association_table)
+    authors: Mapped[List["Author"]] = relationship(
+        secondary=association_table,
+        back_populates="books",
+    )
