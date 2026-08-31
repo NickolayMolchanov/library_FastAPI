@@ -1,5 +1,7 @@
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.author import Author
 from app.models.book import Book
@@ -31,6 +33,14 @@ async def create_book(
     return new_book
 
 
+async def get_books(
+    session: AsyncSession,
+) -> list[Book]:
+    stmt = select(Book)
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def get_book_by_id(
     session: AsyncSession,
     book_id: int,
@@ -40,21 +50,15 @@ async def get_book_by_id(
     return result.scalar_one_or_none()
 
 
-async def get_books(
-    session: AsyncSession,
-) -> list[Book]:
-    stmt = select(Book)
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
 async def upd_book(
     session: AsyncSession,
     book_id: int,
-    data: SBookCreate,
+    book_data: SBookCreate,
 ):
     result = await session.execute(
-        select(Book).where(Book.id == book_id)
+        select(Book)
+        .options(selectinload(Book.authors))
+        .where(Book.id == book_id)
     )
 
     book = result.scalar_one_or_none()
@@ -62,8 +66,23 @@ async def upd_book(
     if book is None:
         return None
 
-    book.title = data.title
-    book.description = data.description
+    book.title = book_data.title
+    book.description = book_data.description
+
+    if book_data.author_ids is not None:
+        authors_result = await session.execute(
+            select(Author).where(Author.id.in_(book_data.author_ids))
+        )
+
+        authors = authors_result.scalars().all()
+
+        if len(authors) != len(book_data.author_ids):
+            raise HTTPException(
+                status_code=404,
+                detail="One or more authors not found"
+            )
+
+        book.authors = authors
 
     await session.commit()
     await session.refresh(book)

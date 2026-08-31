@@ -23,12 +23,6 @@ async def create_new_book(
 ):
     return await create_book(session, book_data)
 
-@router.get("/{book_id}")
-async def get_book(book_id: int, session: AsyncSession = Depends(get_db)):
-    book = await get_book_by_id(session, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-    return book
 
 @router.get("/")
 async def get_all_books(session: AsyncSession = Depends(get_db)):
@@ -37,16 +31,26 @@ async def get_all_books(session: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Not a single book")
     return books
 
+
+
+@router.get("/{book_id}")
+async def get_book(book_id: int, session: AsyncSession = Depends(get_db)):
+    book = await get_book_by_id(session, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
+
+
 @router.put("/{book_id}")
 async def update_book(
         book_id: int,
-        data: SBookCreate,
+        book_data: SBookCreate,
         session: AsyncSession = Depends(get_db),
 ):
     book = await upd_book(
         session=session,
         book_id=book_id,
-        data=data,
+        book_data=book_data,
     )
 
     if book is None:
