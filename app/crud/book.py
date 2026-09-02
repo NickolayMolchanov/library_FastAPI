@@ -12,20 +12,31 @@ async def create_book(
     session: AsyncSession,
     book_data: SBookCreate,
 ) -> Book:
-
-    stmt = select(Author).where(
-        Author.id.in_(book_data.author_ids)
+    result = await session.execute(
+        select(Author).where(
+            Author.id.in_(book_data.author_ids)
+        )
     )
 
-    result = await session.execute(stmt)
-
     authors = list(result.scalars().all())
+
+    if len(authors) != len(book_data.author_ids):
+        raise HTTPException(
+            status_code=404,
+            detail="One or more authors not found"
+        )
 
     new_book = Book(
         title=book_data.title,
         description=book_data.description,
         authors=authors,
     )
+
+    if authors is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No author found",
+        )
 
     session.add(new_book)
     await session.commit()
