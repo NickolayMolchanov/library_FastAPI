@@ -12,6 +12,7 @@ class Book(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(30))
     description: Mapped[Optional[str]] = mapped_column(String(30))
+    year: Mapped[int | None] = mapped_column(nullable=True)
 
     authors: Mapped[List["Author"]] = relationship(
         secondary=association_table,

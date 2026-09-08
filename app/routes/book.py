@@ -25,12 +25,12 @@ async def create_new_book(
 
 
 @router.get("/")
-async def get_all_books(session: AsyncSession = Depends(get_db)):
-    books = await get_books(session)
-    if books is None:
-        raise HTTPException(status_code=404, detail="Not a single book")
-    return books
+async def get_all_books(
 
+        session: AsyncSession = Depends(get_db),
+):
+
+    return await get_books(session)
 
 
 @router.get("/{book_id}")

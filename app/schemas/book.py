@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 class SBookBase(BaseModel):
     title: str
     description: str | None = None
+    year: int | None = None
 
 class SBookCreate(SBookBase):
     author_ids: list[int]
