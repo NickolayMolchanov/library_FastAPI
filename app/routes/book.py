@@ -26,11 +26,15 @@ async def create_new_book(
 
 @router.get("/")
 async def get_all_books(
-
+        year: int | None = None,
+        author_id: int | None = None,
         session: AsyncSession = Depends(get_db),
 ):
-
-    return await get_books(session)
+    return await get_books(
+        session=session,
+        year=year,
+        author_id=author_id
+    )
 
 
 @router.get("/{book_id}")

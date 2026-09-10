@@ -30,6 +30,7 @@ async def create_book(
         title=book_data.title,
         description=book_data.description,
         authors=authors,
+        year=book_data.year,
     )
 
     if authors is None:
@@ -46,9 +47,19 @@ async def create_book(
 
 async def get_books(
     session: AsyncSession,
+    year: int | None = None,
+    author_id: int | None = None,
 ) -> list[Book]:
-    stmt = select(Book)
-    result = await session.execute(stmt)
+
+    query = select(Book)
+
+    if year is not None:
+        query = select(Book).where(Book.year == year)
+
+    if author_id is not None:
+        query = query.join(Book.authors).where(Author.id == author_id)
+
+    result = await session.execute(query)
     return list(result.scalars().all())
 
 
