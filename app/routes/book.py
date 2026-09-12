@@ -28,12 +28,14 @@ async def create_new_book(
 async def get_all_books(
         year: int | None = None,
         author_id: int | None = None,
+        search: str | None = None,
         session: AsyncSession = Depends(get_db),
 ):
     return await get_books(
         session=session,
         year=year,
-        author_id=author_id
+        author_id=author_id,
+        search=search,
     )
 
 

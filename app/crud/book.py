@@ -49,15 +49,19 @@ async def get_books(
     session: AsyncSession,
     year: int | None = None,
     author_id: int | None = None,
+    search: str | None = None,
 ) -> list[Book]:
 
     query = select(Book)
 
     if year is not None:
-        query = select(Book).where(Book.year == year)
+        query = query.where(Book.year == year)
 
     if author_id is not None:
         query = query.join(Book.authors).where(Author.id == author_id)
+
+    if search is not None:
+        query = query.where(Book.title.ilike(f"%{search}%"))
 
     result = await session.execute(query)
     return list(result.scalars().all())
