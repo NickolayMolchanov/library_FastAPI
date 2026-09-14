@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -50,21 +50,64 @@ async def get_books(
     year: int | None = None,
     author_id: int | None = None,
     search: str | None = None,
-) -> list[Book]:
+    sort: str | None = None,
+    page: int = 1,
+    limit: int = 10,
+) -> dict:
 
     query = select(Book)
+    count_query = select(func.count(func.distinct(Book.id)))
+
+    # Фильтры
+    filters = []
+    joins = []
 
     if year is not None:
-        query = query.where(Book.year == year)
-
-    if author_id is not None:
-        query = query.join(Book.authors).where(Author.id == author_id)
+        filters.append(Book.year == year)
 
     if search is not None:
-        query = query.where(Book.title.ilike(f"%{search}%"))
+        filters.append(Book.title.ilike(f"%{search}%"))
+
+    if author_id is not None:
+        joins.append(Book.authors)
+        filters.append(Author.id == author_id)
+
+    query = query.where(*filters)
+    count_query = count_query.where(*filters)
+
+    for join in joins:
+        query = query.join(join)
+        count_query = count_query.join(join)
+
+    #Сортировка
+    if sort is not None:
+        if sort == "year":
+            query = query.order_by(Book.year)
+        elif sort == "-year":
+            query = query.order_by(Book.year.desc())
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail="Sort query must be either year or -year"
+            )
+
+    count_result = await session.execute(count_query)
+    total = count_result.scalar_one()
+
+    #Пагинация
+    offset = (page - 1) * limit
+    query = query.offset(offset).limit(limit)
 
     result = await session.execute(query)
-    return list(result.scalars().all())
+
+    books = list(result.scalars().all())
+
+    return {
+        "books": books,
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }
 
 
 async def get_book_by_id(
