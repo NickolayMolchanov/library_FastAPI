@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.author import (
@@ -25,6 +27,23 @@ async def create_new_author(
     return await create_author(session, author_data)
 
 
+@router.get("/")
+async def get_all_authors(
+    session: AsyncSession = Depends(get_db),
+    birthdate: str | None = None,
+    search: str | None = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=1, ge=1, le=10),
+):
+    return await get_authors(
+        session,
+        birthdate,
+        search,
+        page,
+        limit,
+    )
+
+
 @router.get("/{author_id}")
 async def get_author(
     author_id: int,
@@ -42,15 +61,6 @@ async def get_author(
         )
 
     return author
-
-
-@router.get("/")
-async def get_all_authors(
-    session: AsyncSession = Depends(get_db),
-):
-    authors = await get_authors(session)
-
-    return authors
 
 
 @router.put("/{author_id}")
