@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import date
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.author import (
@@ -9,7 +12,7 @@ from app.crud.author import (
     upd_author,
 )
 from app.database import get_db
-from app.schemas.author import SAuthorCreate
+from app.schemas.author import SAuthorCreate, SAuthor, SAuthorList
 
 router = APIRouter(
     prefix="/authors",
@@ -17,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("/", response_model=SAuthor)
 async def create_new_author(
     author_data: SAuthorCreate,
     session: AsyncSession = Depends(get_db),
@@ -25,7 +28,24 @@ async def create_new_author(
     return await create_author(session, author_data)
 
 
-@router.get("/{author_id}")
+@router.get("/", response_model=SAuthorList)
+async def get_all_authors(
+    session: AsyncSession = Depends(get_db),
+    birthdate: str | None = None,
+    search: str | None = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=10),
+):
+    return await get_authors(
+        session=session,
+        birthdate=birthdate,
+        search=search,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.get("/{author_id}", response_model=SAuthor)
 async def get_author(
     author_id: int,
     session: AsyncSession = Depends(get_db),
@@ -44,16 +64,7 @@ async def get_author(
     return author
 
 
-@router.get("/")
-async def get_all_authors(
-    session: AsyncSession = Depends(get_db),
-):
-    authors = await get_authors(session)
-
-    return authors
-
-
-@router.put("/{author_id}")
+@router.put("/{author_id}", response_model=SAuthor)
 async def update_author_route(
     author_id: int,
     author_data: SAuthorCreate,

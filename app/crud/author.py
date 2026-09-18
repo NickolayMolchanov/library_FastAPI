@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from anyio.itertools import count
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.author import Author
@@ -11,6 +12,7 @@ async def create_author(
 ) -> Author:
     author = Author(
         name=author_data.name,
+        country=author_data.country,
         biography=author_data.biography,
         birthdate=author_data.birthdate,
     )
@@ -24,10 +26,45 @@ async def create_author(
 
 async def get_authors(
     session: AsyncSession,
-) -> list[Author]:
-    stmt = select(Author)
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
+    birthdate: str | None = None,
+    search: str |None = None,
+    page: int = 1,
+    limit: int = 10,
+) -> dict:
+    query = select(Author)
+    count_query = select(func.count(func.distinct(Author.id)))
+
+    #Фильтры
+    filters = []
+
+    if birthdate is not None:
+        filters.append(Author.birthdate == birthdate)
+
+    if search is not None:
+        filters.append(Author.name.ilike(f'%{search}%'))
+
+    query = query.where(*filters)
+    count_query = count_query.where(*filters)
+
+
+    count_result = await session.execute(count_query)
+    total = count_result.scalar_one()
+
+
+    #Пагинация
+    offset = (page - 1) * limit
+    query = query.offset(offset).limit(limit)
+
+    result = await session.execute(query)
+
+    authors = list(result.scalars().all())
+
+    return {
+        "authors": authors,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
 
 
 async def get_author_by_id(
