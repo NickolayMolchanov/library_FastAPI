@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 class SAuthorBase(BaseModel):
     name: str
-    country: str
+    country: str | None
     biography: str
     birthdate: date
 

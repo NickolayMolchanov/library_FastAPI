@@ -1,3 +1,4 @@
+from anyio.itertools import count
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +12,7 @@ async def create_author(
 ) -> Author:
     author = Author(
         name=author_data.name,
+        country=author_data.country,
         biography=author_data.biography,
         birthdate=author_data.birthdate,
     )
@@ -29,13 +31,11 @@ async def get_authors(
     page: int = 1,
     limit: int = 10,
 ) -> dict:
-
     query = select(Author)
     count_query = select(func.count(func.distinct(Author.id)))
 
     #Фильтры
     filters = []
-    joins = []
 
     if birthdate is not None:
         filters.append(Author.birthdate == birthdate)
@@ -44,7 +44,7 @@ async def get_authors(
         filters.append(Author.name.ilike(f'%{search}%'))
 
     query = query.where(*filters)
-    count_query = query.where(*filters)
+    count_query = count_query.where(*filters)
 
 
     count_result = await session.execute(count_query)

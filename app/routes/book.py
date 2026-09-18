@@ -9,7 +9,7 @@ from app.crud.book import (
     delete_book
 )
 from app.database import get_db
-from app.schemas.book import SBookCreate, SBookList
+from app.schemas.book import SBookCreate, SBookList, SBook
 
 router = APIRouter(
     prefix="/books",
@@ -45,7 +45,7 @@ async def get_all_books(
     )
 
 
-@router.get("/{book_id}")
+@router.get("/{book_id}", response_model=SBook)
 async def get_book(book_id: int, session: AsyncSession = Depends(get_db)):
     book = await get_book_by_id(session, book_id)
     if book is None:
@@ -53,7 +53,7 @@ async def get_book(book_id: int, session: AsyncSession = Depends(get_db)):
     return book
 
 
-@router.put("/{book_id}")
+@router.put("/{book_id}", response_model=SBook)
 async def update_book(
         book_id: int,
         book_data: SBookCreate,
