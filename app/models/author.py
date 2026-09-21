@@ -1,6 +1,6 @@
 from datetime import date
 from typing import Optional, List
-from sqlalchemy import String
+from sqlalchemy import String, Date
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from app.database import Base
@@ -11,9 +11,9 @@ class Author(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
-    country: Mapped[str] = mapped_column(String(30), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(30), nullable=True)
     biography: Mapped[Optional[str]] = mapped_column(String(200))
-    birthdate: Mapped[Optional[date]] = mapped_column(String(200))
+    birthdate: Mapped[Date | None] = mapped_column(Date, nullable=True)
 
     books: Mapped[List["Book"]] = relationship(
         secondary=association_table,

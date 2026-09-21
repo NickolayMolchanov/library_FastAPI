@@ -90,6 +90,7 @@ async def upd_author(
         return None
 
     author.name = author_data.name
+    author.country = author_data.country
     author.biography = author_data.biography
     author.birthdate = author_data.birthdate
 
