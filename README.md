@@ -24,30 +24,7 @@ Pydantic
 SQLite
 aiosqlite
 Alembic
-pytest
-Ruff
-Структура проекта
-fastapi_library/
-│
-├── app/
-│   ├── crud/
-│   ├── models/
-│   ├── routers/
-│   ├── schemas/
-│   ├── database.py
-│   └── main.py
-│
-├── alembic/
-│   ├── versions/
-│   ├── env.py
-│   └── script.py.mako
-│
-├── tests/
-│
-├── .gitignore
-├── alembic.ini
-├── requirements.txt
-└── README.md
+
 Установка
 
 Клонировать репозиторий:
