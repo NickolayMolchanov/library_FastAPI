@@ -1,4 +1,5 @@
-from anyio.itertools import count
+from datetime import date
+
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,15 +27,15 @@ async def create_author(
 
 async def get_authors(
     session: AsyncSession,
-    birthdate: str | None = None,
-    search: str |None = None,
+    birthdate: date | None = None,
+    search: str | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict:
     query = select(Author)
     count_query = select(func.count(func.distinct(Author.id)))
 
-    #Фильтры
+    # Фильтры
     filters = []
 
     if birthdate is not None:
@@ -46,12 +47,10 @@ async def get_authors(
     query = query.where(*filters)
     count_query = count_query.where(*filters)
 
-
     count_result = await session.execute(count_query)
     total = count_result.scalar_one()
 
-
-    #Пагинация
+    # Пагинация
     offset = (page - 1) * limit
     query = query.offset(offset).limit(limit)
 

@@ -6,6 +6,7 @@ class SBookBase(BaseModel):
     description: str | None = None
     year: int | None = None
 
+
 class SBookCreate(SBookBase):
     author_ids: list[int]
 

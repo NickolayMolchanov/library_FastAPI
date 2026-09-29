@@ -6,6 +6,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from app.database import Base
 from app.models.associations import association_table
 
+
 class Author(Base):
     __tablename__ = 'authors'
 
@@ -13,7 +14,7 @@ class Author(Base):
     name: Mapped[str] = mapped_column(String(30))
     country: Mapped[str | None] = mapped_column(String(30), nullable=True)
     biography: Mapped[Optional[str]] = mapped_column(String(200))
-    birthdate: Mapped[Date | None] = mapped_column(Date, nullable=True)
+    birthdate: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     books: Mapped[List["Book"]] = relationship(
         secondary=association_table,

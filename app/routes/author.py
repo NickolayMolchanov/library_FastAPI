@@ -1,5 +1,4 @@
 from datetime import date
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +30,7 @@ async def create_new_author(
 @router.get("/", response_model=SAuthorList)
 async def get_all_authors(
     session: AsyncSession = Depends(get_db),
-    birthdate: str | None = None,
+    birthdate: date | None = None,
     search: str | None = None,
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=10),

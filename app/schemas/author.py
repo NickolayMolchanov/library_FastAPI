@@ -7,16 +7,19 @@ from pydantic import BaseModel, ConfigDict
 class SAuthorBase(BaseModel):
     name: str
     country: str | None
-    biography: str
-    birthdate: date
+    biography: str | None
+    birthdate: date | None
+
 
 class SAuthorCreate(SAuthorBase):
     pass
+
 
 class SAuthor(SAuthorBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class SAuthorList(BaseModel):
     authors: List[SAuthor]

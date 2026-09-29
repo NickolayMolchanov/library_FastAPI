@@ -33,12 +33,6 @@ async def create_book(
         year=book_data.year,
     )
 
-    if authors is None:
-        raise HTTPException(
-            status_code=404,
-            detail="No author found",
-        )
-
     session.add(new_book)
     await session.commit()
     await session.refresh(new_book)
@@ -79,7 +73,7 @@ async def get_books(
         query = query.join(join)
         count_query = count_query.join(join)
 
-    #Сортировка
+    # Сортировка
     if sort is not None:
         if sort == "year":
             query = query.order_by(Book.year)
@@ -94,7 +88,7 @@ async def get_books(
     count_result = await session.execute(count_query)
     total = count_result.scalar_one()
 
-    #Пагинация
+    # Пагинация
     offset = (page - 1) * limit
     query = query.offset(offset).limit(limit)
 
@@ -176,5 +170,3 @@ async def delete_book(
     await session.commit()
 
     return book
-
-

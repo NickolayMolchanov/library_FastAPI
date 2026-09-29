@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.book import (
@@ -16,7 +16,8 @@ router = APIRouter(
     tags=["books"],
 )
 
-@router.post("/")
+
+@router.post("/", response_model=SBook)
 async def create_new_book(
     book_data: SBookCreate,
     session: AsyncSession = Depends(get_db),
@@ -69,6 +70,7 @@ async def update_book(
         raise HTTPException(status_code=404, detail="Book not found")
 
     return book
+
 
 @router.delete("/{book_id}")
 async def delete_book_route(
